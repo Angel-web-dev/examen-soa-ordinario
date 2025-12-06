@@ -1,0 +1,156 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Examen SOA - Frontend</title>
+</head>
+
+<body>
+
+  <!-- SOAP -->
+  <h1>Alumno (SOAP)</h1>
+
+  <form id="alumnoForm">
+    <input name="matricula" placeholder="Matrícula"><br>
+    <input name="nombre" placeholder="Nombre"><br>
+    <input name="apellido" placeholder="Apellido"><br>
+    <button type="submit">Registrar Alumno</button>
+  </form>
+
+  <h3>Consultar alumno</h3>
+  <input id="consultaMat" placeholder="Matrícula">
+  <button id="consultarBtn">Consultar</button>
+
+  <h3>Eliminar alumno</h3>
+  <input id="elimMat" placeholder="Matrícula">
+  <button id="eliminarBtn">Eliminar</button>
+
+  <hr>
+
+  <!-- REST -->
+  <h1>Curso (REST)</h1>
+
+  <form id="cursoForm">
+    <input name="nombre" placeholder="Nombre curso"/><br/>
+    <input name="fechaInicio" placeholder="YYYY-MM-DD"/><br/>
+    <textarea name="descripcion" placeholder="Descripción"></textarea><br/>
+    <button type="submit">Crear curso</button>
+  </form>
+
+  <h2>Lista de cursos</h2>
+  <button id="load">Cargar cursos</button>
+  <ul id="list"></ul>
+
+<script>
+  const base = 'http://localhost:8080';
+
+  // ---------------- SOAP ------------------
+
+  document.getElementById('alumnoForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+
+    const xml = `
+    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:spy="spyne.alumno">
+       <soapenv:Header/>
+       <soapenv:Body>
+          <spy:registrar>
+             <spy:matricula>${fd.get('matricula')}</spy:matricula>
+             <spy:nombre>${fd.get('nombre')}</spy:nombre>
+             <spy:apellido>${fd.get('apellido')}</spy:apellido>
+          </spy:registrar>
+       </soapenv:Body>
+    </soapenv:Envelope>`;
+
+    const res = await fetch('http://localhost:8000/soap', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/xml' },
+      body: xml
+    });
+
+    alert(await res.text());
+  });
+
+  document.getElementById('consultarBtn').addEventListener('click', async () => {
+    const matricula = document.getElementById('consultaMat').value;
+
+    const xml = `
+    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:spy="spyne.alumno">
+       <soapenv:Header/>
+       <soapenv:Body>
+          <spy:consultar>
+             <spy:matricula>${matricula}</spy:matricula>
+          </spy:consultar>
+       </soapenv:Body>
+    </soapenv:Envelope>`;
+
+    const res = await fetch('http://localhost:8000/soap', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/xml' },
+      body: xml
+    });
+
+    alert(await res.text());
+  });
+
+  document.getElementById('eliminarBtn').addEventListener('click', async () => {
+    const matricula = document.getElementById('elimMat').value;
+
+    const xml = `
+    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:spy="spyne.alumno">
+       <soapenv:Header/>
+       <soapenv:Body>
+          <spy:eliminar>
+             <spy:matricula>${matricula}</spy:matricula>
+          </spy:eliminar>
+       </soapenv:Body>
+    </soapenv:Envelope>`;
+
+    const res = await fetch('http://localhost:8000/soap', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/xml' },
+      body: xml
+    });
+
+    alert(await res.text());
+  });
+
+  // ---------------- REST ------------------
+
+  document.getElementById('cursoForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+
+    const payload = {
+      nombre: fd.get('nombre'),
+      fechaInicio: fd.get('fechaInicio'),
+      descripcion: fd.get('descripcion')
+    };
+
+    const res = await fetch(base + '/api/cursos', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+
+    alert('Curso creado');
+  });
+
+  document.getElementById('load').addEventListener('click', async () => {
+    const res = await fetch(base + '/api/cursos');
+    const data = await res.json();
+
+    const ul = document.getElementById('list');
+    ul.innerHTML = '';
+
+    data.forEach(c => {
+      const li = document.createElement('li');
+      li.textContent = `${c.nombre} (${c.fechaInicio})`;
+      ul.appendChild(li);
+    });
+  });
+
+</script>
+
+</body>
+</html>

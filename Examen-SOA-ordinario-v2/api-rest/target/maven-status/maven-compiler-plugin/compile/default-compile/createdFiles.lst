@@ -1,0 +1,4 @@
+com/example/apirest/ApiRestApplication.class
+com/example/apirest/controller/CursoController.class
+com/example/apirest/model/Curso.class
+com/example/apirest/repository/CursoRepository.class

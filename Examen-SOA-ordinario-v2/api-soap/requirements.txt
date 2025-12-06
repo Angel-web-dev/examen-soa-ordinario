@@ -1,0 +1,5 @@
+Flask==2.3.2
+spyne==2.13.15
+SQLAlchemy==2.0.19
+pymysql==1.0.3
+gunicorn==20.1.0

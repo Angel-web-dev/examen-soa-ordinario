@@ -1,0 +1,46 @@
+version: '3.8'
+services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: examen_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  flyway:
+    image: boxfuse/flyway:9.16.0
+    command: -url=jdbc:mysql://db:3306/examen_db -user=root -password=password -locations=filesystem:/sql migrate
+    volumes:
+      - ./api-rest/src/main/resources/db/migration:/sql
+    depends_on:
+      - db
+
+  api-rest:
+    build:
+      context: ./api-rest
+    ports:
+      - "8080:8080"
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: examen_db
+      DB_USER: root
+      DB_PASS: password
+    depends_on:
+      - db
+      - flyway
+
+  api-soap:
+    build:
+      context: ./api-soap
+    ports:
+      - "5000:5000"
+    environment:
+      DB_URL: mysql+pymysql://root:password@db:3306/examen_db
+    depends_on:
+      - db
+volumes:
+  db_data:
